@@ -1,8 +1,9 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, SafeAreaView, Image, TouchableOpacity } from 'react-native';
-import { ChevronRight, Phone, Mail, MessageSquare } from 'lucide-react-native';
+import { ChevronRight, Phone, Mail, MessageSquare, LogOut } from 'lucide-react-native';
 import { colors } from '../../constants/colors';
 import { useRouter } from 'expo-router';
+import { useAuth } from '../../lib/AuthContext';
 
 interface Child {
   id: string;
@@ -61,16 +62,45 @@ function SupportCard() {
 
 export default function ProfileScreen() {
   const router = useRouter();
+  const { logout, user } = useAuth();
+
+  const handleLogout = async () => {
+    try {
+      console.log('Logout button pressed');
+      await logout();
+      console.log('Logout successful');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
   
-  // Mock data - In a real app, this would come from your backend
-  const parent = {
+  // Use actual user data if available, otherwise use mock data
+  const parent = user ? {
+    name: user.name || "名前未設定",
+    phone: user.parentInfo?.phone || "未登録",
+    email: user.email,
+    imageUrl: user.id === 'demo-user' 
+      ? "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=600"
+      : "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=600"
+  } : {
     name: "花田 さゆり",
     phone: "090-1234-5678",
     email: "sayuri.hanada@example.com",
     imageUrl: "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=600"
   };
 
-  const children: Child[] = [
+  const children: Child[] = user?.children ? user.children.map(child => {
+    const birthDate = new Date(child.birthDate);
+    const today = new Date();
+    const ageMonths = (today.getFullYear() - birthDate.getFullYear()) * 12 + 
+                      (today.getMonth() - birthDate.getMonth());
+    return {
+      id: child.id,
+      name: child.name,
+      ageMonths,
+      imageUrl: child.photo || "https://images.pexels.com/photos/35537/child-children-girl-happy.jpg?auto=compress&cs=tinysrgb&w=600"
+    };
+  }) : [
     {
       id: "1",
       name: "花田 はな",
@@ -90,6 +120,15 @@ export default function ProfileScreen() {
       <ScrollView>
         <View style={styles.header}>
           <Text style={styles.title}>プロフィール</Text>
+          <TouchableOpacity 
+            style={styles.logoutButton} 
+            onPress={handleLogout}
+            activeOpacity={0.7}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <LogOut size={20} color={colors.textSub} />
+            <Text style={styles.logoutText}>ログアウト</Text>
+          </TouchableOpacity>
         </View>
 
         <View style={styles.profileSection}>
@@ -138,6 +177,9 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     padding: 16,
     paddingTop: 24,
   },
@@ -145,6 +187,20 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: '700',
     color: colors.textMain,
+  },
+  logoutButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    backgroundColor: colors.accentSoft,
+    borderRadius: 16,
+  },
+  logoutText: {
+    marginLeft: 6,
+    fontSize: 14,
+    color: colors.textSub,
+    fontWeight: '500',
   },
   profileSection: {
     padding: 16,
