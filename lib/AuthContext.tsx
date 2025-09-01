@@ -50,13 +50,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const loadAuthState = async () => {
     try {
-      const [storedUser, firstLaunch, authToken] = await Promise.all([
+      const [storedUser, , authToken] = await Promise.all([
         AsyncStorage.getItem(STORAGE_KEYS.USER),
         AsyncStorage.getItem(STORAGE_KEYS.FIRST_LAUNCH),
         AsyncStorage.getItem(STORAGE_KEYS.AUTH_TOKEN),
       ]);
 
-      setIsFirstLaunch(firstLaunch === null);
+      // Always show onboarding for demo purposes
+      // In production, remove this line
+      setIsFirstLaunch(true);
+      
+      // Original logic (commented out for demo)
+      // setIsFirstLaunch(firstLaunch === null);
       
       if (storedUser && authToken) {
         setUser(JSON.parse(storedUser));
