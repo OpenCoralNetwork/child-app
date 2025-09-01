@@ -1,5 +1,5 @@
-import { View, Text, StyleSheet, ScrollView, SafeAreaView, Image } from 'react-native';
-import { useLocalSearchParams, Stack } from 'expo-router';
+import { View, Text, StyleSheet, ScrollView, SafeAreaView, Image, TouchableOpacity } from 'react-native';
+import { useLocalSearchParams, Stack, useRouter } from 'expo-router';
 import { ChevronLeft } from 'lucide-react-native';
 import { colors } from '../../constants/colors';
 
@@ -131,6 +131,7 @@ function InfoCard({ title, children }: { title: string; children: React.ReactNod
 
 export default function ChildProfileScreen() {
   const { id } = useLocalSearchParams();
+  const router = useRouter();
   const child = mockChildren[id as string];
 
   if (!child) {
@@ -147,7 +148,11 @@ export default function ChildProfileScreen() {
         options={{
           headerShown: true,
           headerTitle: child.name,
-          headerLeft: () => <ChevronLeft size={24} color={colors.textMain} />,
+          headerLeft: () => (
+            <TouchableOpacity onPress={() => router.back()}>
+              <ChevronLeft size={24} color={colors.textMain} />
+            </TouchableOpacity>
+          ),
         }}
       />
       <SafeAreaView style={styles.container}>
